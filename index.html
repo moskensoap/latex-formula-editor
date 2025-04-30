@@ -33,6 +33,9 @@
   </script>  
   <script defer src="./MathJax-3.2.2/es5/tex-mml-chtml.js"></script>
 
+  <!-- Load html2canvas -->
+  <script src="./html2canvas/html2canvas.min.js"></script>
+
   <style>
     body { font-family: Arial, sans-serif; padding: 5px 20px 20px 20px; }
     textarea { width: 100%; height: 150px; font-size: 16px; }
@@ -66,6 +69,13 @@
 </span>
 
 <button id="copyButton" style="margin-left: 30px;">Copy</button>
+
+<label for="scaleInput" style="margin-left: 30px;">Scale:</label>
+<input type="number" id="scaleInput" value="5" min="1" max="25" step="1" style="width: 35px; margin-right: 10px;">
+
+<button id="savePngButton">Save as PNG</button>
+<button id="saveJpgButton">Save as JPG</button>
+<button id="copyblob">Img Copy</button>
 
 <br>
 
@@ -120,6 +130,153 @@
       button.textContent = originalText;
     }, 1000);
   });
+
+  function getScale() {
+    const input = document.getElementById('scaleInput');
+    let scale = parseFloat(input.value);
+    if (isNaN(scale) || scale <= 0) {
+      input.value = 1;
+      scale = 1;
+    }
+    return scale;
+  }
+
+  function handleSave(format) {
+    const output = document.getElementById('output');
+    const scale = getScale();
+
+    html2canvas(output, {
+      backgroundColor: 'white',
+      scale: scale
+    }).then(canvas => {
+      if (format === 'clipboard') {
+        copyToClipboard(canvas);
+      } else {
+        cropAndSave(canvas, format, scale);
+      }
+    });
+  }
+
+  function cropAndSave(canvas, format, scale) {
+    const ctx = canvas.getContext('2d');
+    const { width, height } = canvas;
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    const border = Math.ceil(3 * scale);
+    const padding = Math.ceil(1 * scale);
+
+    let top = height, bottom = 0, left = width, right = 0;
+
+    for (let y = border; y < height - border; y++) {
+      for (let x = border; x < width - border; x++) {
+        const index = (y * width + x) * 4;
+        const r = data[index], g = data[index + 1], b = data[index + 2], a = data[index + 3];
+        const isNotWhite = !(r > 240 && g > 240 && b > 240 && a > 240);
+        if (isNotWhite) {
+          if (y < top) top = y;
+          if (y > bottom) bottom = y;
+          if (x < left) left = x;
+          if (x > right) right = x;
+        }
+      }
+    }
+
+    if (top > bottom || left > right) {
+      alert("Nothing to save: no visible content.");
+      return;
+    }
+
+    top = Math.max(top - padding, 0);
+    left = Math.max(left - padding, 0);
+    bottom = Math.min(bottom + padding, height - 1);
+    right = Math.min(right + padding, width - 1);
+
+    const croppedWidth = right - left + 1;
+    const croppedHeight = bottom - top + 1;
+
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = croppedWidth;
+    croppedCanvas.height = croppedHeight;
+    const croppedCtx = croppedCanvas.getContext('2d');
+    croppedCtx.drawImage(canvas, left, top, croppedWidth, croppedHeight, 0, 0, croppedWidth, croppedHeight);
+
+    croppedCanvas.toBlob(blob => {
+      const link = document.createElement('a');
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      link.href = URL.createObjectURL(blob);
+      link.download = `formula-${timestamp}.${format === 'jpg' ? 'jpg' : 'png'}`;
+      link.click();
+    }, format === 'jpg' ? 'image/jpeg' : 'image/png');
+  }
+
+  function copyToClipboard(canvas) {
+    const scale = getScale();
+
+    const ctx = canvas.getContext('2d');
+    const { width, height } = canvas;
+    const imageData = ctx.getImageData(0, 0, width, height);
+    const data = imageData.data;
+
+    const border = Math.ceil(3 * scale);
+    const padding = Math.ceil(3 * scale);
+
+    let top = height, bottom = 0, left = width, right = 0;
+
+    for (let y = border; y < height - border; y++) {
+      for (let x = border; x < width - border; x++) {
+        const index = (y * width + x) * 4;
+        const r = data[index], g = data[index + 1], b = data[index + 2], a = data[index + 3];
+        const isNotWhite = !(r > 240 && g > 240 && b > 240 && a > 240);
+        if (isNotWhite) {
+          if (y < top) top = y;
+          if (y > bottom) bottom = y;
+          if (x < left) left = x;
+          if (x > right) right = x;
+        }
+      }
+    }
+
+    if (top > bottom || left > right) {
+      alert("Nothing to copy: no visible content.");
+      return;
+    }
+
+    top = Math.max(top - padding, 0);
+    left = Math.max(left - padding, 0);
+    bottom = Math.min(bottom + padding, height - 1);
+    right = Math.min(right + padding, width - 1);
+
+    const croppedWidth = right - left + 1;
+    const croppedHeight = bottom - top + 1;
+
+    const croppedCanvas = document.createElement('canvas');
+    croppedCanvas.width = croppedWidth;
+    croppedCanvas.height = croppedHeight;
+    const croppedCtx = croppedCanvas.getContext('2d');
+    croppedCtx.drawImage(canvas, left, top, croppedWidth, croppedHeight, 0, 0, croppedWidth, croppedHeight);
+
+    croppedCanvas.toBlob(blob => {
+      navigator.clipboard.write([
+        new ClipboardItem({ [blob.type]: blob })
+      ])
+      .then(() => {
+        const btn = document.getElementById("copyblob");
+        const original = btn.textContent;
+        btn.textContent = "Img Copied";
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.disabled = false;
+        }, 1000);
+      })
+      .catch(err => alert("Copy failed: " + err));
+    }, 'image/png');
+  }
+
+  document.getElementById("savePngButton").onclick = () => handleSave("png");
+  document.getElementById("saveJpgButton").onclick = () => handleSave("jpg");
+  document.getElementById("copyblob").onclick = () => handleSave("clipboard");
 </script>
 
 
