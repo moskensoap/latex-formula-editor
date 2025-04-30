@@ -145,10 +145,28 @@
     const output = document.getElementById('output');
     const scale = getScale();
 
+    const assistiveMMLs = Array.from(output.querySelectorAll('mjx-assistive-mml'));
+    const parentMap = new Map();
+    assistiveMMLs.forEach(el => {
+      const parent = el.parentNode;
+      const next = el.nextSibling;
+      parentMap.set(el, { parent, next });
+      parent.removeChild(el);
+    });
+
     html2canvas(output, {
       backgroundColor: 'white',
       scale: scale
     }).then(canvas => {
+      assistiveMMLs.forEach(el => {
+        const { parent, next } = parentMap.get(el);
+        if (next) {
+          parent.insertBefore(el, next);
+        } else {
+          parent.appendChild(el);
+        }
+      });
+
       if (format === 'clipboard') {
         copyToClipboard(canvas);
       } else {
