@@ -28,6 +28,9 @@
       svg: { fontCache: 'global' }
     };
   </script>
+  <script>
+    localStorage.removeItem("MathJax-Menu-Settings");
+  </script>  
   <script defer src="./MathJax-3.2.2/es5/tex-mml-chtml.js"></script>
 
   <style>
@@ -641,7 +644,6 @@ const groups = {
       //part1
       { latex: '\\lim a', insertText: '\\lim ' },
       { latex: '\\lim_{x \\to 0}', insertText: '\\lim_{}' },
-      { latex: '\\lim_{x \\to \\infty}', insertText: '\\lim_{}' },
       { latex: '\\max_{a} b', insertText: '\\max_{} ' },
       { latex: '\\min_{a} b', insertText: '\\min_{} ' },
       //part2
