@@ -44,7 +44,7 @@ You can easily run the LaTeX Formula Editor by following these simple steps:
 For users who prefer a quick deployment, you can use the pre-built Docker image available on Docker Hub. Simply run the following command:
 
 ```bash
-sudo docker run -d -p 8080:80 --name latex-formula-editor moskensoap/latex-formula-editor
+sudo docker run --restart unless-stopped -d -p 8080:80 --name latex-formula-editor moskensoap/latex-formula-editor:latest
 ```
 
 This will pull the `moskensoap/latex-formula-editor` image from Docker Hub and run it on your local machine, accessible at `http://localhost:8080` (for local use) or `http://<your-ip-address>:8080` (for remote access).
@@ -105,7 +105,7 @@ If you need a custom Docker image, or if the architecture of the provided Docker
   - After building, you can run the image as follows:
 
   ```bash
-  sudo docker run -d -p 8080:80 --name latex-formula-editor latex-formula-editor:latest
+  sudo docker run --restart unless-stopped -d -p 8080:80 --name latex-formula-editor latex-formula-editor:latest
   ```
 
   - This runs the container from your custom-built image, mapping port 80 to port 8080 on your local machine.
