@@ -186,8 +186,11 @@
   function showSuggestions(list, row, col, prefixLen) {
     const rect = latexInput.getBoundingClientRect();
 
-    const top = rect.top + window.scrollY + 20 + row * 18.5; // Adjust top position based on cursor position
-    const left = rect.left + window.scrollX - 20 + col * 8; // Adjust left position based on cursor position
+    // Adjust top position based on cursor position and account for scroll
+    const top = rect.top + window.scrollY + 20 + row * 18.4 - latexInput.scrollTop;
+
+    // Adjust left position based on cursor position
+    const left = rect.left + window.scrollX - 20 + col * 8;
 
     suggestionBox.innerHTML = "";
     list.forEach((item, index) => {
