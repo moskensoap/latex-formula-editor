@@ -110,6 +110,120 @@
   Rendered output will appear here in real time
 </div>
 
+<script>
+  const LATEX_COMMANDS = [
+    "frac", "sqrt", "sum", "int", "lim", "sin", "cos", "tan", "log", "ln",
+    "alpha", "beta", "gamma", "delta", "epsilon", "theta", "lambda", "mu", "pi",
+    "phi", "rho", "sigma", "tau", "omega", "infty", "cdot", "leq", "geq", "neq",
+    "times", "div", "pm", "mp", "to", "rightarrow", "leftarrow", "uparrow",
+    "downarrow", "Rightarrow", "Leftarrow", "ldots", "cdots", "vdots", "ddots",
+    "overline", "underline", "vec", "hat", "bar"
+  ];
+
+  const latexInput = document.getElementById("latexInput");
+  const suggestionBox = document.createElement("div");
+  suggestionBox.style.position = "absolute";
+  suggestionBox.style.display = "none";
+  suggestionBox.style.background = "#fff";
+  suggestionBox.style.border = "1px solid #ccc";
+  suggestionBox.style.zIndex = 1001;
+  suggestionBox.style.maxHeight = "200px";
+  suggestionBox.style.overflowY = "auto";
+  suggestionBox.style.borderRadius = "6px";
+  suggestionBox.style.boxShadow = "0 2px 6px rgba(0,0,0,0.2)";
+  suggestionBox.style.fontSize = "14px";
+  suggestionBox.style.padding = "4px 0";
+  document.body.appendChild(suggestionBox);
+
+  let currentSuggestions = [];
+  let selectedIndex = -1;
+
+  latexInput.addEventListener("input", e => {
+    const pos = latexInput.selectionStart;
+    const value = latexInput.value.slice(0, pos);
+    const lines = value.split('\n');
+    const row = lines.length - 1;
+    const col = lines[row].length;
+    const match = value.match(/\\(\w*)$/);
+    if (match) {
+      const prefix = match[1];
+      currentSuggestions = LATEX_COMMANDS.filter(cmd => cmd.startsWith(prefix));
+
+      // Check if the input matches any command exactly
+      if (currentSuggestions.length === 1 && currentSuggestions[0] === prefix) {
+        suggestionBox.style.display = "none"; // Hide suggestion box if the input matches a command exactly
+        return;
+      }
+
+      if (currentSuggestions.length > 0) {
+        showSuggestions(currentSuggestions, row, col, match[0].length);
+        return;
+      }
+    }
+    suggestionBox.style.display = "none"; // Hide the suggestion box if no match
+  });
+
+  latexInput.addEventListener("keydown", e => {
+    if (suggestionBox.style.display === "none") return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      selectedIndex = (selectedIndex + 1) % currentSuggestions.length;
+      updateSuggestionHighlight();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      selectedIndex = (selectedIndex - 1 + currentSuggestions.length) % currentSuggestions.length;
+      updateSuggestionHighlight();
+    } else if (e.key === "Tab" || e.key === "Enter") {
+      if (selectedIndex >= 0) {
+        e.preventDefault();
+        insertSuggestion(currentSuggestions[selectedIndex]);
+      }
+    } else if (e.key === "Escape") {
+      suggestionBox.style.display = "none"; // Hide the suggestion box on Escape
+    }
+  });
+
+  function showSuggestions(list, row, col, prefixLen) {
+    const rect = latexInput.getBoundingClientRect();
+
+    const top = rect.top + window.scrollY + 20 + row * 18.5; // Adjust top position based on cursor position
+    const left = rect.left + window.scrollX - 20 + col * 8; // Adjust left position based on cursor position
+
+    suggestionBox.innerHTML = "";
+    list.forEach((item, index) => {
+      const div = document.createElement("div");
+      div.textContent = `\\${item}`;
+      div.style.padding = "4px 12px";
+      div.style.cursor = "pointer";
+      div.addEventListener("mousedown", e => {
+        e.preventDefault();
+        insertSuggestion(item);
+      });
+      suggestionBox.appendChild(div);
+    });
+    selectedIndex = -1;
+    updateSuggestionHighlight();
+    suggestionBox.style.left = `${left}px`;
+    suggestionBox.style.top = `${top}px`;
+    suggestionBox.style.display = "block";
+    suggestionBox.dataset.prefixLen = prefixLen;
+  }
+
+  function updateSuggestionHighlight() {
+    Array.from(suggestionBox.children).forEach((child, idx) => {
+      child.style.background = idx === selectedIndex ? "#e0e0e0" : "white";
+    });
+  }
+
+  function insertSuggestion(text) {
+    const pos = latexInput.selectionStart;
+    const prefixLen = parseInt(suggestionBox.dataset.prefixLen || "0");
+    latexInput.setRangeText(`\\${text}`, pos - prefixLen, pos, "end");
+    suggestionBox.style.display = "none"; // Hide the suggestion box after insertion
+    latexInput.focus();
+  }
+</script>
+
 
 <script>
   document.getElementById('copyButton').addEventListener('click', function() {
