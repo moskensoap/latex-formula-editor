@@ -141,9 +141,8 @@
   latexInput.addEventListener("input", e => {
     const pos = latexInput.selectionStart;
     const value = latexInput.value.slice(0, pos);
-    const lines = value.split('\n');
-    const row = lines.length - 1;
-    const col = lines[row].length;
+    const { row, col } = calculateColumnPosition(value);
+
     const match = value.match(/\\(\w*)$/);
     if (match) {
       const prefix = match[1];
@@ -224,6 +223,24 @@
     latexInput.setRangeText(`\\${text}`, pos - prefixLen, pos, "end");
     suggestionBox.style.display = "none"; // Hide the suggestion box after insertion
     latexInput.focus();
+  }
+
+  function calculateColumnPosition(value) {
+    const maxCols = Math.floor(latexInput.clientWidth / 8);
+    const lines = value.split('\n');
+    let row = 0;
+    let col = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (i === lines.length - 1) {
+        col = line.length % maxCols;
+        row += Math.floor(line.length / maxCols);
+      } else {
+        row += Math.floor(line.length / maxCols) + 1;
+      }
+    }
+  return { row, col };
   }
 </script>
 
