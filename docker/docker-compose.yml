@@ -2,7 +2,7 @@ services:
   latex-formula-editor:
     build:
       context: ..
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     image: latex-formula-editor:latest
     container_name: latex-formula-editor
     ports:
