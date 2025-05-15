@@ -264,6 +264,7 @@
       if (selectedIndex >= 0) {
         e.preventDefault();
         insertSuggestion(currentSuggestions[selectedIndex]);
+        initRender();
       }
     } else if (e.key === "Escape") {
       suggestionBox.style.display = "none";
@@ -288,6 +289,7 @@
       div.addEventListener("mousedown", e => {
         e.preventDefault();
         insertSuggestion(item);
+        initRender();
       });
       suggestionBox.appendChild(div);
     });
