@@ -10,7 +10,7 @@ services:
       - '8501:8501'
     tty: true
     stdin_open: true
-    restart: 
+    restart: unless-stopped
     
 # To run the streamlit demo
 # and navigate to http://localhost:8501/ or http://your-ip:8501/
