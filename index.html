@@ -213,7 +213,7 @@
     const value = latexInput.value.slice(0, pos);
     const { row, col } = calculateColumnPosition(value);
 
-    const match = value.match(/\\(\w*)$/);
+    const match = value.match(/\\([^\s\\]*)$/);
     if (match) {
       const prefix = match[1];
       currentSuggestions = LATEX_COMMANDS.filter(cmd => cmd.startsWith(prefix));
