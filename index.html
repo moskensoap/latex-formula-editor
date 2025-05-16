@@ -271,14 +271,67 @@
     }
   });
 
+  function detectBrowser() {
+    const userAgent = navigator.userAgent;
+
+    if (/Edg\//.test(userAgent)) return "edge";
+    if (/Chrome/.test(userAgent) && !/Edg\//.test(userAgent)) return "chrome";
+    if (/Firefox/.test(userAgent)) return "firefox";
+    if (/Safari/.test(userAgent) && !/Chrome/.test(userAgent)) return "safari";
+
+    return "unknown";
+  }
+
+  function getBrowserOffsets() {
+    const browser = detectBrowser();
+    let rowHeight, colWidth, topOffset, leftOffset;
+
+    switch (browser) {
+      case "edge":
+        rowHeight = 18.4;
+        colWidth = 8;
+        topOffset = 20;
+        leftOffset = -20;
+        break;
+      case "chrome":
+        rowHeight = 18.4;
+        colWidth = 8.85;
+        topOffset = 20;
+        leftOffset = -20;
+        break;
+      case "firefox":
+        rowHeight = 22;
+        colWidth = 9.6;
+        topOffset = 25;
+        leftOffset = -20;
+        break;
+      case "safari":
+        rowHeight = 18.4;
+        colWidth = 8.85;
+        topOffset = 25;
+        leftOffset = -20;
+        break;
+      default:
+        rowHeight = 18.4;
+        colWidth = 8.85;
+        topOffset = 20;
+        leftOffset = -20;
+    }
+
+    return { rowHeight, colWidth, topOffset, leftOffset };
+  }
+
+
   function showSuggestions(list, row, col, prefixLen) {
     const rect = latexInput.getBoundingClientRect();
+    let rowHeight, colWidth, topOffset, leftOffset;
+    ({ rowHeight, colWidth, topOffset, leftOffset } = getBrowserOffsets());
 
     // Adjust top position based on cursor position and account for scroll
-    const top = rect.top + window.scrollY + 20 + row * 18.4 - latexInput.scrollTop;
+    const top = rect.top + window.scrollY + topOffset + row * rowHeight - latexInput.scrollTop;
 
     // Adjust left position based on cursor position
-    const left = rect.left + window.scrollX - 20 + col * 8;
+    const left = rect.left + window.scrollX + leftOffset + col * colWidth;
 
     suggestionBox.innerHTML = "";
     list.forEach((item, index) => {
@@ -316,7 +369,9 @@
   }
 
   function calculateColumnPosition(value) {
-    const maxCols = Math.floor(latexInput.clientWidth / 8);
+    let rowHeight, colWidth, topOffset, leftOffset;
+    ({ rowHeight, colWidth, topOffset, leftOffset } = getBrowserOffsets());
+    const maxCols = Math.floor(latexInput.clientWidth / colWidth);
     const lines = value.split('\n');
     let row = 0;
     let col = 0;
