@@ -208,6 +208,16 @@
   let currentSuggestions = [];
   let selectedIndex = -1;
 
+  // Simple fuzzy match: e.g., "fc" matches "frac"
+  function fuzzyMatch(input, target) {
+    let i = 0;
+    for (let char of target) {
+      if (char === input[i]) i++;
+      if (i === input.length) return true;
+    }
+    return false;
+  }
+
   latexInput.addEventListener("input", e => {
     const pos = latexInput.selectionStart;
     const value = latexInput.value.slice(0, pos);
@@ -216,19 +226,36 @@
     const match = value.match(/\\([^\s\\]*)$/);
     if (match) {
       const prefix = match[1];
-      currentSuggestions = LATEX_COMMANDS.filter(cmd => cmd.startsWith(prefix));
+
+      // First: exact prefix match
+      const startMatches = LATEX_COMMANDS.filter(cmd => cmd.startsWith(prefix));
 
       // Check if the input matches any command exactly
-      if (currentSuggestions.length === 1 && currentSuggestions[0] === prefix) {
+      if (startMatches.length === 1 && startMatches[0] === prefix) {
         suggestionBox.style.display = "none"; // Hide suggestion box if the input matches a command exactly
         return;
       }
 
+      // Second: include match (not prefix, but contains substring)
+      const includeMatches = LATEX_COMMANDS.filter(cmd =>
+        cmd.includes(prefix) && !cmd.startsWith(prefix)
+      );
+
+      // Combine both (prefix matches first, then include matches)
+      currentSuggestions = [...startMatches, ...includeMatches];
+
+      // If still no matches, fall back to fuzzy match
+      if (currentSuggestions.length === 0) {
+        currentSuggestions = LATEX_COMMANDS.filter(cmd => fuzzyMatch(prefix, cmd));
+      }
+
+      // Show suggestions if any
       if (currentSuggestions.length > 0) {
         showSuggestions(currentSuggestions, row, col, match[0].length);
         return;
       }
     }
+
     suggestionBox.style.display = "none"; // Hide the suggestion box if no match
   });
 
