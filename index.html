@@ -228,13 +228,15 @@
       const prefix = match[1];
 
       // First: exact prefix match
-      const startMatches = LATEX_COMMANDS.filter(cmd => cmd.startsWith(prefix));
+      let startMatches = LATEX_COMMANDS.filter(cmd => cmd.startsWith(prefix));
 
       // Check if the input matches any command exactly
       if (startMatches.length === 1 && startMatches[0] === prefix) {
         suggestionBox.style.display = "none"; // Hide suggestion box if the input matches a command exactly
         return;
       }
+
+      startMatches.sort((a, b) => a.length - b.length || a.localeCompare(b));
 
       // Second: include match (not prefix, but contains substring)
       const includeMatches = LATEX_COMMANDS.filter(cmd =>
