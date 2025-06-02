@@ -20,7 +20,7 @@ An offline LaTeX formula editor that offers real-time preview with customizable 
 
 Live demo available at: https://latex.moskensoap.xyz
 
-# Running the Editor:
+# Running the Editor in Browser:
 
 You can easily run the LaTeX Formula Editor by following these simple steps:
 
@@ -36,9 +36,49 @@ You can easily run the LaTeX Formula Editor by following these simple steps:
 
   Go to the [repository page](https://www.github.com/moskensoap/latex-formula-editor), click "Code" > "Download ZIP", and extract the files. After extracting, simply double-click `index.html` to open it in your browser.
   
-  ```
-  No installation required.
-  ```
+
+# Running the Editor with Electron
+
+## Step 1: Install Dependencies
+
+```bash
+git clone https://github.com/moskensoap/latex-formula-editor.git
+cd latex-formula-editor
+npm install
+```
+
+## Step 2: Run in Development Mode
+
+```bash
+npm run start
+```
+
+## Step 3: Build for Production
+```bash
+# Build for Windows (64-bit)
+npm run build:win64
+
+# Build for Windows (32-bit)
+npm run build:win32
+
+# Build for macOS (Intel)
+npm run build:mac
+
+# Build for macOS (Apple Silicon)
+npm run build:mac-arm
+
+# Build for Linux (64-bit)
+npm run build:linux
+```
+
+## Step 4:  Locate the Executable
+
+```bash
+cd dist
+```
+Find the appropriate executable for your platform in the generated folder (e.g., latexformula-win32-x64) and run the application. 
+
+Enjoy!
 
 # Docker Deployment:
 
